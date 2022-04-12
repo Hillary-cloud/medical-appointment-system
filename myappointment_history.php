@@ -1,0 +1,166 @@
+<?php include("header1.php");?>
+<?php
+    session_start();
+    $con=mysqli_connect("localhost","root","","mass");
+
+    $pid = $_SESSION['pid'];
+    $email = $_SESSION['email'];
+    $firstname = $_SESSION['firstname'];
+    $gender = $_SESSION['gender'];
+    $lastname = $_SESSION['lastname'];
+    $gsm = $_SESSION['gsm'];
+
+    if(isset($_GET['cancel']))
+  {
+    $query=mysqli_query($con,"update appointment set userStatus='0' where ID = '".$_GET['ID']."'");
+    if($query)
+    {
+      echo "<script>alert('Your appointment has been cancelled');</script>";
+    }
+  }
+?>
+
+<div class="container-fluid">
+    <div class="row">
+    <div class="col-3 text-light bg-primary text-center" style="min-height: 600px;"><hr class="bg-primary"><hr class="bg-light">
+    <h2 class="text-warning">Patient's Dashboard</h2><br><br><hr>
+        
+    <!--<img class="img-fluid img-thumbnail mx-auto d-block" alt="Responsive image" src="<?php?>" style="height: 150px; width: 150px;"><br><br><br>-->
+        <tr class="text-center"> 
+        <a href="patient_profile.php"><button class="fun btn btn-light w-100"><h5>Profile</h5></button></a>
+        </tr><hr class="bg-light">
+        <tr class="text-center">
+        <a href="book_appointment.php"><button class="fun btn btn-light w-100"><h5>Book Appointment</h5></button></a>
+        </tr><hr class="bg-light">
+        <tr class="text-center">
+        <a href="myappointment_history.php"><button class="fun btn btn-light w-100"><h5>My Appointments</h5></button></a>
+        </tr><hr class="bg-light">
+        <tr class="text-center">
+        <a href="logout_patient.php"><button class="fun btn btn-light w-100"><h5>Sign out </h5></button></a>
+        </tr><hr class="bg-light">
+
+    </div>
+
+
+    <div class="col-9"><br>
+    <div class="jumbotron">
+    <div class="card">
+    <div class="card-body">
+    <h3 class="text-center">List of My Appointments</h3><br>
+    
+    <div class="table-responsive">
+        
+    <table class="table table-hover table-striped">
+          <thead>
+            <tr class="text-center">
+            <th scope="col">S/N</th>
+              <th scope="col">Doctor Name</th>
+              <th scope="col">Specialization</th>
+              <th scope="col">Appointment Date</th>
+              <th scope="col">Appointment Time</th>
+              <th scope="col">Health Challenge</th>
+              <th scope="col">Amount(NGN)</th>
+              <th scope="col">Current Status</th>
+              <th scope="col">Action</th>
+              <th scope="col">Payment Status</th>
+              <th scope="col">Appointment Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php 
+
+              $con=mysqli_connect("localhost","root","","mass");
+              global $con;
+              $i = 1;
+              $query = "select ID,doctorName,specialization,appdate,apptime,problem,doctorFee,userStatus,doctorStatus,payment_status,appointment_status from appointment where firstname ='$firstname' and lastname='$lastname' order by id desc;";
+              $result = mysqli_query($con,$query);
+              while ($row = mysqli_fetch_array($result)){
+        
+            ?>
+                <tr>
+                <td><?php echo $i++;?></td>
+                <td class="d-none"><?php echo $row['ID'];?></td>
+                  <td><?php echo $row['doctorName'];?></td>
+                  <td><?php echo $row['specialization'];?></td>
+                  <td><?php echo $row['appdate'];?></td>
+                  <td><?php echo $row['apptime'];?></td>
+                  <td><?php echo $row['problem'];?></td>
+                  <td><?php echo $row['doctorFee'];?></td>
+                  
+                    <td>
+              <?php 
+              if(($row['userStatus']==1) && ($row['doctorStatus']==1))  
+              { ?>
+                <p class="text-warning">Pending</p> 
+              <?php }elseif(($row['userStatus']==0) && ($row['doctorStatus']==1))  
+              { ?>
+                <p class="text-danger">Cancelled by me</p> 
+              <?php }elseif(($row['userStatus']==1) && ($row['doctorStatus']==0))  
+              { ?>
+                <p class="text-danger">Cancelled by <?php echo $row['doctorName']; ?></p> 
+              <?php }elseif(($row['userStatus']==1) && ($row['doctorStatus']==2))  
+              { ?>
+                <p class="text-success">Approved by <?php echo $row['doctorName']; ?></p> 
+              <?php }elseif(($row['userStatus']==0) && ($row['doctorStatus']==2))  
+              { ?>
+                <p class="text-success">Approved by <?php echo $row['doctorName']; ?></p> 
+              <?php }else{
+                
+              } 
+                  ?></td>
+
+                  <td>
+                  <?php if(($row['userStatus']==1) && ($row['doctorStatus']==1))  
+                  { ?>
+
+                                              
+                      <a href="myappointment_history.php?ID=<?php echo $row['ID']?>&cancel=update" 
+                        onClick="return confirm('Are you sure you want to cancel this appointment ?')"
+                        title="Cancel Appointment" tooltip-placement="top" tooltip="Remove"><button class="btn btn-danger">Cancel</button></a>
+                      <?php }elseif(($row['userStatus']==1) && ($row['doctorStatus']==2))  
+                            {?>
+                              <p class="text-success">Approved</p> 
+                            <?php } elseif(($row['userStatus']==0) && ($row['doctorStatus']==2))  
+                            {?>
+                              <p class="text-success">Approved</p> 
+                            <?php }elseif(($row['userStatus']==0) && ($row['doctorStatus']==1))  
+                            {?>
+                              <p class="text-danger">Cancelled</p> 
+                            <?php } elseif(($row['userStatus']==1) && ($row['doctorStatus']==0))  
+                            {?>
+                              <p class="text-danger">Cancelled</p> 
+                            <?php }else{}
+                    ?>
+                  
+                  </td>
+                  <td>
+                      <h4 class="text-success"><?php echo $row['payment_status']?></h4>
+                  </td>
+                  <td>
+                      <h4 class="text-success"><?php echo $row['appointment_status']?></h4>
+                  </td>
+                  
+                  <?php 
+                    if (($row['userStatus']==1) && ($row['doctorStatus']==2)) {?>
+                     <td><a href="appointment_page.php?ID=<?php echo $row['ID']?>&view=select"><button class="btn btn-success">View</button></a></td> 
+                   <?php }else{?>
+                    <td>-</td>
+                  <?php }
+                  ?>
+                </tr>
+              <?php } ?>
+          </tbody>
+        </table>
+  <br>
+</div>
+
+
+    </div>
+    </div>
+    </div>
+    </div>
+    
+    </div>
+    </div>
+
+    <?php include("footer.php"); ?>
